@@ -1,0 +1,33 @@
+package com.example.mini_e_shop.data.local.entity
+
+//data class OrderItemEntity()
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "order_items",
+    foreignKeys = [
+        ForeignKey(
+            entity = OrderEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["orderId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = ProductEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["productId"], // Sửa lại thành productId cho nhất quán
+            onDelete = ForeignKey.SET_NULL // Nếu sản phẩm bị xóa, giữ lại lịch sử đơn hàng
+        )
+    ]
+)
+data class OrderItemEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val orderId: Int,
+    val productId: Int, // Sửa lại thành productId kiểu Int
+    val quantity: Int,
+    val price: Double // Sửa lại thành price cho nhất quán
+)
+

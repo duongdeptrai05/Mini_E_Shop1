@@ -1,0 +1,49 @@
+package com.example.mini_e_shop.data.repository
+
+import com.example.mini_e_shop.data.local.dao.CartDao
+import com.example.mini_e_shop.data.local.entity.CartItemEntity
+import com.example.mini_e_shop.data.mapper.toCartItemDetails
+import com.example.mini_e_shop.domain.model.Product
+import com.example.mini_e_shop.domain.repository.CartRepository
+import com.example.mini_e_shop.presentation.cart.CartItemDetails
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class CartRepositoryImpl @Inject constructor(
+    private val cartDao: CartDao
+) : CartRepository {
+
+    override fun getCartItems(userId: Int): Flow<List<CartItemDetails>> {
+        return cartDao.getCartItemsWithProducts(userId).map {
+            it.map { cartItemWithProduct ->
+                cartItemWithProduct.toCartItemDetails()
+            }
+        }
+    }
+
+    override suspend fun addProductToCart(product: Product, userId: Int) {
+        // TODO: Logic phức tạp hơn có thể được thêm ở đây,
+        // ví dụ: kiểm tra xem sản phẩm đã có trong giỏ chưa để tăng số lượng.
+        // Hiện tại, chúng ta sẽ thêm mới hoặc cập nhật với số lượng là 1.
+        val cartItem = CartItemEntity(
+            userId = userId,
+            productId = product.id,
+            quantity = 1 // Mặc định thêm 1 sản phẩm
+        )
+        cartDao.upsertCartItem(cartItem)
+    }
+    override suspend fun updateQuantity(cartItemId: Int, newQuantity: Int) {
+        cartDao.updateQuantity(cartItemId, newQuantity)
+    }
+
+    override suspend fun removeItem(cartItemId: Int) {
+        cartDao.deleteCartItem(cartItemId)
+    }
+
+    override suspend fun clearCart(userId: Int) {
+        cartDao.clearCart(userId)
+    }
+}
