@@ -16,7 +16,7 @@ object SampleData {
                 id = 0,
                 name = "Samsung Galaxy S23 Ultra", brand = "Samsung", category = "Điện thoại",
                 origin = "Korea", price = 1199.0, stock = 40,
-                imageUrl = "https://images.samsung.com/is/image/samsung/p6pim/vn/2302/gallery/vn-galaxy-s23-ultra-s918-sm-s918bzevxxv-534860493?\$650_519_PNG\$",
+                imageUrl = "https://images.samsung.com/is/image/samsung/p6pim/vn/2302/gallery/vn-galaxy-s23-ultra-s918-sm-s918bzevxxv-534860493?$650_519_PNG$",
                 description = "The ultimate Galaxy phone with a built-in S Pen."
             ),
             ProductEntity(
@@ -30,14 +30,14 @@ object SampleData {
                 id = 0,
                 name = "Dell XPS 15", brand = "Dell", category = "Laptop",
                 origin = "USA", price = 1499.0, stock = 25,
-                imageUrl = "https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/xps-notebooks/xps-15-9530/media-gallery/black/notebook-xps-15-9530-nt-black-gallery-3.psd?fmt=pjpg&pscan=auto&scl=1&hei=402&wid=677&qlt=100,0&resMode=sharp2&size=677,402&chrss=full",
+                imageUrl = "https://m.media-amazon.com/images/I/71u-i39DB2L._AC_SL1500_.jpg",
                 description = "Stunning display and powerful performance."
             ),
             ProductEntity(
                 id = 0,
                 name = "Sony WH-1000XM5", brand = "Sony", category = "Tai nghe",
                 origin = "Japan", price = 399.0, stock = 60,
-                imageUrl = "https://www.sony.com.vn/image/5d02da5df552836db894cead8a68f1f3?fmt=pjpeg&wid=330&bgcolor=FFFFFF&bgc=FFFFFF",
+                imageUrl = "https://m.media-amazon.com/images/I/61vJt6M-xAL._AC_SL1500_.jpg",
                 description = "Industry-leading noise canceling headphones."
             ),
             ProductEntity(
@@ -58,14 +58,14 @@ object SampleData {
                 id = 0,
                 name = "Canon EOS R6 Mark II", brand = "Canon", category = "Máy ảnh",
                 origin = "Japan", price = 2499.0, stock = 15,
-                imageUrl = "https://i1.adis.ws/i/canon/eos-r6-mark-ii_800x800_square_32c19186634a491897b39c05e13a96a3?\$prod-gallery-1by1-jpg\$",
+                imageUrl = ("https://www.cined.com/content/uploads/2022/11/Canon-R6-Mark-II-review.jpg"),
                 description = "A hybrid powerhouse for stills and video."
             ),
             ProductEntity(
                 id = 0,
                 name = "Nintendo Switch OLED", brand = "Nintendo", category = "Gaming",
                 origin = "Japan", price = 349.0, stock = 45,
-                imageUrl = "https://assets.nintendo.com/image/upload/f_auto,q_auto,w_960,h_540/ncom/en_US/switch/site-design/oled-model-promo",
+                imageUrl = "https://m.media-amazon.com/images/I/716O-1I-2oL._AC_SL1500_.jpg",
                 description = "Play at home or on the go."
             ),
             ProductEntity(
@@ -86,7 +86,7 @@ object SampleData {
                 id = 0,
                 name = "Samsung Odyssey G9", brand = "Samsung", category = "Màn hình",
                 origin = "Korea", price = 1399.0, stock = 20,
-                imageUrl = "https://images.samsung.com/is/image/samsung/p6pim/vn/ls49cg932sexxv/gallery/vn-odyssey-oled-g9-g93sc-ls49cg932sexxv-537452654?\$650_519_PNG\$",
+                imageUrl = "https://images.samsung.com/is/image/samsung/p6pim/vn/ls49cg932sexxv/gallery/vn-odyssey-oled-g9-g93sc-ls49cg932sexxv-537452654?$650_519_PNG$",
                 description = "49-inch curved gaming monitor."
             ),
             ProductEntity(
@@ -142,7 +142,7 @@ object SampleData {
                 id = 0,
                 name = "Sony a7 IV", brand = "Sony", category = "Máy ảnh",
                 origin = "Japan", price = 2498.0, stock = 20,
-                imageUrl = "https://www.sony.com.vn/image/5d02da5df552836db894cead8a68f1f3?fmt=pjpeg&wid=330&bgcolor=FFFFFF&bgc=FFFFFF",
+                imageUrl = "https://m.media-amazon.com/images/I/81o5-cT3UvL._AC_SL1500_.jpg",
                 description = "A7 IV: Beyond basic."
             )
         )

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.outlined.SentimentSatisfied
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,7 +42,8 @@ data class Message(val text: String, val isFromUser: Boolean, val showAvatar: Bo
 @Composable
 fun SupportScreen(
     viewModel: SupportViewModel = hiltViewModel(),
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToContact: () -> Unit
 ) {
     var messageText by remember { mutableStateOf("") }
     val messages = remember {
@@ -57,6 +59,11 @@ fun SupportScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToContact) {
+                        Icon(Icons.Default.SupportAgent, contentDescription = "Contact")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

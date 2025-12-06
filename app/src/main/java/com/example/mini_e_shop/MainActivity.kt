@@ -29,6 +29,7 @@ import com.example.mini_e_shop.ui.theme.Mini_E_ShopTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.mini_e_shop.presentation.auth.AuthViewModel
 import com.example.mini_e_shop.presentation.auth.AuthState
+import com.example.mini_e_shop.presentation.contact.ContactScreen
 import com.example.mini_e_shop.presentation.product_detail.ProductDetailScreen
 import com.example.mini_e_shop.presentation.support.SupportScreen
 
@@ -116,7 +117,13 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
                                         composable(Screen.Support.route) {
-                                            SupportScreen(onBack = { navController.popBackStack() })
+                                            SupportScreen(
+                                                onBack = { navController.popBackStack() },
+                                                onNavigateToContact = { navController.navigate(Screen.Contact.route) }
+                                            )
+                                        }
+                                        composable(Screen.Contact.route) {
+                                            ContactScreen(onBack = { navController.popBackStack() })
                                         }
                                     }
                                 }
