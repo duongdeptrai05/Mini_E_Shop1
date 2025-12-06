@@ -19,8 +19,8 @@ class LoginViewModel @Inject constructor(
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
-    private val _email = MutableStateFlow("")
-    val email = _email.asStateFlow()
+    private val _usernameOrEmail = MutableStateFlow("")
+    val usernameOrEmail = _usernameOrEmail.asStateFlow()
 
     private val _password = MutableStateFlow("")
     val password = _password.asStateFlow()
@@ -32,21 +32,21 @@ class LoginViewModel @Inject constructor(
     val loginState = _loginState.asStateFlow()
 
     init {
-        loadRememberMeEmail()
+        loadRememberMeCredentials()
     }
 
-    private fun loadRememberMeEmail() {
+    private fun loadRememberMeCredentials() {
         viewModelScope.launch {
             val prefs = userPreferencesManager.authPreferencesFlow.first()
-            _email.value = prefs.rememberMeEmail
+            _usernameOrEmail.value = prefs.rememberMeEmail // Assuming this stores the last login identifier
             if (prefs.rememberMeEmail.isNotEmpty()) {
                 _rememberMe.value = true
             }
         }
     }
 
-    fun onEmailChange(newValue: String) {
-        _email.value = newValue
+    fun onUsernameOrEmailChange(newValue: String) {
+        _usernameOrEmail.value = newValue
     }
 
     fun onPasswordChange(newValue: String) {
@@ -61,20 +61,25 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             try {
-                val user = userRepository.getUserByEmail(_email.value)
+                val loginIdentifier = _usernameOrEmail.value
+                var user = userRepository.getUserByEmail(loginIdentifier)
+                if (user == null) {
+                    user = userRepository.getUserByName(loginIdentifier)
+                }
 
                 if (user != null && BCrypt.checkpw(_password.value, user.passwordHash)) {
-                    // Login is successful.
-                    // Handle the "Remember Me" logic.
                     if (_rememberMe.value) {
-                        userPreferencesManager.saveLoginState(user.id, user.email)
+                        // Save the identifier that was used to log in
+                        userPreferencesManager.saveLoginState(user.id, loginIdentifier)
+                    } else {
+                        // If remember me is not checked, we should still save the logged in user's ID but clear the remember me identifier
+                         userPreferencesManager.saveLoginState(user.id, "")
                     }
                     
-                    // Emit success. The MainActivity will get the user and pass to AuthViewModel.
                     _loginState.value = LoginState.Success(user)
 
                 } else {
-                    _loginState.value = LoginState.Error("Email hoặc mật khẩu không đúng")
+                    _loginState.value = LoginState.Error("Tên đăng nhập/email hoặc mật khẩu không đúng")
                 }
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error("Đã có lỗi xảy ra: ${e.message}")

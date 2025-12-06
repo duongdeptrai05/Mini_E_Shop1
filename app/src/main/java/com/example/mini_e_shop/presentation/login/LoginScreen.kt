@@ -35,7 +35,7 @@ fun LoginScreen(
     onLoginSuccess: (UserEntity) -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
-    val email by viewModel.email.collectAsState()
+    val usernameOrEmail by viewModel.usernameOrEmail.collectAsState()
     val password by viewModel.password.collectAsState()
     val rememberMe by viewModel.rememberMe.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
@@ -72,7 +72,7 @@ fun LoginScreen(
                     AuthTabs(onRegisterClicked = onNavigateToRegister)
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    EmailField(value = email, onValueChange = { viewModel.onEmailChange(it) })
+                    UsernameOrEmailField(value = usernameOrEmail, onValueChange = { viewModel.onUsernameOrEmailChange(it) })
                     Spacer(modifier = Modifier.height(16.dp))
                     PasswordField(value = password, onValueChange = { viewModel.onPasswordChange(it) })
                     Spacer(modifier = Modifier.height(16.dp)) // Reduced spacer
@@ -182,7 +182,7 @@ private fun AuthTabs(onRegisterClicked: () -> Unit) {
 }
 
 @Composable
-private fun EmailField(value: String, onValueChange: (String) -> Unit) {
+private fun UsernameOrEmailField(value: String, onValueChange: (String) -> Unit) {
     Column {
         Text("Tên tài khoản hoặc Email", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextGray)
         Spacer(modifier = Modifier.height(4.dp))
@@ -190,7 +190,7 @@ private fun EmailField(value: String, onValueChange: (String) -> Unit) {
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("example@email.com") },
+            placeholder = { Text("username or email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email icon", tint = TextGray) },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -198,7 +198,7 @@ private fun EmailField(value: String, onValueChange: (String) -> Unit) {
                 unfocusedBorderColor = Color.LightGray,
                 cursorColor = PrimaryBlue
             ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             singleLine = true
         )
     }
