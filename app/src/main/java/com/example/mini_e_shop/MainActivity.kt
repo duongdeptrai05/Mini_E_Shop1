@@ -30,6 +30,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.mini_e_shop.presentation.auth.AuthViewModel
 import com.example.mini_e_shop.presentation.auth.AuthState
 import com.example.mini_e_shop.presentation.product_detail.ProductDetailScreen
+import com.example.mini_e_shop.presentation.support.SupportScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -74,6 +75,9 @@ class MainActivity : ComponentActivity() {
                                                 },
                                                 onProductClick = { productId ->
                                                     navController.navigate("${Screen.ProductDetail.route}/$productId")
+                                                },
+                                                onNavigateToSupport = {
+                                                    navController.navigate(Screen.Support.route)
                                                 }
                                             )
                                         }
@@ -110,6 +114,9 @@ class MainActivity : ComponentActivity() {
                                             ProductDetailScreen(
                                                 onBack = { navController.popBackStack() }
                                             )
+                                        }
+                                        composable(Screen.Support.route) {
+                                            SupportScreen(onBack = { navController.popBackStack() })
                                         }
                                     }
                                 }

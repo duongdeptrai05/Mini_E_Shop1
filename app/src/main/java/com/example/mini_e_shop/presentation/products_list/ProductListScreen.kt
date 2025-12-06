@@ -30,7 +30,8 @@ fun ProductListScreen(
     viewModel: ProductListViewModel,
     isAdmin: Boolean,
     onNavigateToAddEditProduct: (Int?) -> Unit,
-    onProductClick: (Int) -> Unit
+    onProductClick: (Int) -> Unit,
+    onNavigateToSupport: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -40,8 +41,8 @@ fun ProductListScreen(
             TopAppBar(
                 title = { Text("Điện tử Văn Mạnh", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
                 actions = {
-                    IconButton(onClick = { /* Navigate to cart */ }) {
-                        Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
+                    IconButton(onClick = onNavigateToSupport) {
+                        Icon(Icons.Default.ContactSupport, contentDescription = "Customer Support")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)

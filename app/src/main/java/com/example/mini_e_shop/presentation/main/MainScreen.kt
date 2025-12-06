@@ -19,7 +19,8 @@ fun MainScreen(
     onNavigateToOrders: () -> Unit,
     onLogout: () -> Unit,
     onNavigateToAddEditProduct: (Int?) -> Unit,
-    onProductClick: (Int) -> Unit
+    onProductClick: (Int) -> Unit,
+    onNavigateToSupport: () -> Unit
 ) {
     val navController = rememberNavController()
 
@@ -37,7 +38,8 @@ fun MainScreen(
             onNavigateToOrders = onNavigateToOrders,
             onLogout = onLogout,
             onNavigateToAddEditProduct = onNavigateToAddEditProduct,
-            onProductClick = onProductClick
+            onProductClick = onProductClick,
+            onNavigateToSupport = onNavigateToSupport
         )
     }
 }

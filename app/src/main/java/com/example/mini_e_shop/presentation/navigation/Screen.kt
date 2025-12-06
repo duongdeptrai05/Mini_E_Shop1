@@ -42,4 +42,5 @@ sealed class Screen(
     object Orders : Screen(route = "orders")
     object AddEditProduct : Screen(route = "add_edit_product")
     object ProductDetail : Screen("product_detail")
+    object Support : Screen("support")
 }
