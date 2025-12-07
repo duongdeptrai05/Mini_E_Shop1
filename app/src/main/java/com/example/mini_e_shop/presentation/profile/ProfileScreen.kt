@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Settings
@@ -29,8 +30,10 @@ import com.example.mini_e_shop.ui.theme.PrimaryPurple
 
 @Composable
 fun ProfileScreen(
-    currentUser: UserEntity?, // Receive the UserEntity directly
+    currentUser: UserEntity?,
     onNavigateToOrders: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToFavorites: () -> Unit, // Thêm callback này
     onLogout: () -> Unit
 ) {
     Column(
@@ -40,7 +43,11 @@ fun ProfileScreen(
     ) {
         Header(currentUser)
         Spacer(modifier = Modifier.height(20.dp))
-        Menu(onNavigateToOrders)
+        Menu(
+            onNavigateToOrders = onNavigateToOrders,
+            onNavigateToSettings = onNavigateToSettings,
+            onNavigateToFavorites = onNavigateToFavorites
+        )
         Spacer(modifier = Modifier.height(20.dp))
         LogoutButton(onClick = onLogout)
     }
@@ -94,7 +101,7 @@ private fun Header(user: UserEntity?) {
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(user?.name ?: "Loading...", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(user?.name ?: "Khách", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         Text(user?.email ?: "", color = Color.Gray, fontSize = 14.sp)
                     }
                 }
@@ -104,10 +111,15 @@ private fun Header(user: UserEntity?) {
 }
 
 @Composable
-private fun Menu(onNavigateToOrders: () -> Unit) {
+private fun Menu(
+    onNavigateToOrders: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToFavorites: () -> Unit
+) {
     Column(modifier = Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         MenuButton(text = "Đơn hàng của tôi", icon = Icons.Default.ReceiptLong, onClick = onNavigateToOrders)
-        MenuButton(text = "Cài đặt", icon = Icons.Default.Settings, onClick = { /* Navigate to settings */ })
+        MenuButton(text = "Sản phẩm yêu thích", icon = Icons.Default.Favorite, onClick = onNavigateToFavorites)
+        MenuButton(text = "Cài đặt", icon = Icons.Default.Settings, onClick = onNavigateToSettings)
     }
 }
 

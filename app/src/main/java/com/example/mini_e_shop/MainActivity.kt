@@ -28,6 +28,7 @@ import com.example.mini_e_shop.presentation.navigation.Screen
 import com.example.mini_e_shop.presentation.orders.OrdersScreen
 import com.example.mini_e_shop.presentation.product_detail.ProductDetailScreen
 import com.example.mini_e_shop.presentation.register.RegisterScreen
+import com.example.mini_e_shop.presentation.settings.SettingsScreen
 import com.example.mini_e_shop.presentation.support.SupportScreen
 import com.example.mini_e_shop.ui.theme.Mini_E_ShopTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -146,6 +147,14 @@ class MainActivity : ComponentActivity() {
                                                             snackbarHostState.showSnackbar(message)
                                                         }
                                                     }
+                                                )
+                                            }
+                                            composable(Screen.Settings.route) {
+                                                SettingsScreen(
+                                                    viewModel = hiltViewModel(),
+                                                    currentUser = currentState.currentUser,
+                                                    onBack = { navController.popBackStack() },
+                                                    onNavigateToSupport = { navController.navigate(Screen.Support.route) }
                                                 )
                                             }
                                         }

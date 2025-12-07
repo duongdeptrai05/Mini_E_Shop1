@@ -11,6 +11,7 @@ import com.example.mini_e_shop.data.local.entity.UserEntity
 import com.example.mini_e_shop.presentation.auth.MainUiState
 import com.example.mini_e_shop.presentation.main.components.BottomNavigationBar
 import com.example.mini_e_shop.presentation.navigation.MainNavGraph
+import com.example.mini_e_shop.presentation.navigation.Screen
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -40,6 +41,7 @@ fun MainScreen(
             isAdmin = mainUiState.isAdmin,
             currentUser = currentUser,
             onNavigateToOrders = onNavigateToOrders,
+            onNavigateToSettings = { mainNavController.navigate(Screen.Settings.route) }, // Thêm callback này
             onLogout = onLogout,
             onNavigateToAddEditProduct = onNavigateToAddEditProduct,
             onProductClick = onProductClick,

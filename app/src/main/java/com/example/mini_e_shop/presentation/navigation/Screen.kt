@@ -45,4 +45,5 @@ sealed class Screen(
     object Support : Screen("support")
     object Checkout : Screen("checkout")
     object Contact : Screen("contact")
+    object Settings : Screen("settings")
 }

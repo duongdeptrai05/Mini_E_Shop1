@@ -21,6 +21,7 @@ fun MainNavGraph(
     isAdmin: Boolean,
     currentUser: UserEntity?,
     onNavigateToOrders: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onLogout: () -> Unit,
     onNavigateToAddEditProduct: (Int?) -> Unit,
     onProductClick: (Int) -> Unit,
@@ -57,6 +58,8 @@ fun MainNavGraph(
             ProfileScreen(
                 currentUser = currentUser,
                 onNavigateToOrders = onNavigateToOrders,
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToFavorites = { bottomNavController.navigate(Screen.Favorites.route) }, // Điều hướng sang tab Favorites
                 onLogout = onLogout
             )
         }
