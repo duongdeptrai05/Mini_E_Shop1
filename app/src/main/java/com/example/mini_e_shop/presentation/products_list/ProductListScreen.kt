@@ -209,38 +209,104 @@ private fun SortOptions(
     selectedSortType: SortType,
     onSortTypeSelected: (SortType) -> Unit
 ) {
-    // Dùng Map để lưu trữ tên hiển thị cho mỗi kiểu sắp xếp
+    var expanded by remember { mutableStateOf(false) }
+    
     val sortTypes = mapOf(
         SortType.PRICE_ASC to "Giá tăng dần",
         SortType.PRICE_DESC to "Giá giảm dần",
         SortType.NAME_ASC to "Tên A-Z"
     )
+    
+    val selectedText = sortTypes[selectedSortType] ?: "Sắp xếp"
 
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        items(sortTypes.keys.toList()) { sortType ->
-            val isSelected = selectedSortType == sortType
-            FilterChip(
-                selected = isSelected,
-                onClick = {
-                    // Nếu đang chọn rồi mà bấm lại thì bỏ chọn (quay về mặc định)
-                    if (isSelected) {
-                        onSortTypeSelected(SortType.NONE)
-                    } else {
-                        onSortTypeSelected(sortType)
-                    }
-                },
-                label = { Text(sortTypes[sortType] ?: "") },
-                leadingIcon = if (isSelected) {
-                    { Icon(Icons.Filled.Check, contentDescription = "Selected") }
-                } else {
-                    null
+        FilterChip(
+            selected = selectedSortType != SortType.NONE,
+            onClick = { expanded = true },
+            label = { 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Sort,
+                        contentDescription = "Sort",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(selectedText)
                 }
-
+            },
+            trailingIcon = {
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (expanded) "Thu gọn" else "Mở rộng",
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = HomeColor.copy(alpha = 0.15f),
+                selectedLabelColor = HomeColor,
+                containerColor = SurfaceLight,
+                labelColor = TextSecondary
+            ),
+            shape = RoundedCornerShape(12.dp)
+        )
+        
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            DropdownMenuItem(
+                text = { Text("Giá tăng dần") },
+                onClick = {
+                    onSortTypeSelected(SortType.PRICE_ASC)
+                    expanded = false
+                },
+                leadingIcon = {
+                    if (selectedSortType == SortType.PRICE_ASC) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = HomeColor)
+                    }
+                }
             )
+            DropdownMenuItem(
+                text = { Text("Giá giảm dần") },
+                onClick = {
+                    onSortTypeSelected(SortType.PRICE_DESC)
+                    expanded = false
+                },
+                leadingIcon = {
+                    if (selectedSortType == SortType.PRICE_DESC) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = HomeColor)
+                    }
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Tên A-Z") },
+                onClick = {
+                    onSortTypeSelected(SortType.NAME_ASC)
+                    expanded = false
+                },
+                leadingIcon = {
+                    if (selectedSortType == SortType.NAME_ASC) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = HomeColor)
+                    }
+                }
+            )
+            if (selectedSortType != SortType.NONE) {
+                Divider()
+                DropdownMenuItem(
+                    text = { Text("Bỏ sắp xếp", color = TextSecondary) },
+                    onClick = {
+                        onSortTypeSelected(SortType.NONE)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.mini_e_shop.presentation.favorites
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mini_e_shop.domain.model.Product
+import com.example.mini_e_shop.domain.repository.CartRepository
 import com.example.mini_e_shop.domain.repository.FavoriteRepository
 import com.example.mini_e_shop.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +28,8 @@ sealed class FavoritesUiState {
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     // uiState sẽ tự động cập nhật khi danh sách yêu thích của người dùng thay đổi
@@ -60,6 +62,21 @@ class FavoritesViewModel @Inject constructor(
             userRepository.getCurrentUser().firstOrNull()?.let { user ->
                 // Chúng ta chỉ cần gọi toggleFavorite, nó sẽ tự động xóa
                 favoriteRepository.toggleFavorite(productId = product.id, userId = user.id)
+            }
+        }
+    }
+    
+    // Hàm để thêm sản phẩm vào giỏ hàng
+    fun addToCart(product: Product) {
+        viewModelScope.launch {
+            userRepository.getCurrentUser().firstOrNull()?.let { user ->
+                try {
+                    if (product.stock > 0) {
+                        cartRepository.addProductToCart(product, user.id)
+                    }
+                } catch (e: Exception) {
+                    // Xử lý lỗi nếu cần
+                }
             }
         }
     }

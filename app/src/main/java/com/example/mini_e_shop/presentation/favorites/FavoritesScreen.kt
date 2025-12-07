@@ -87,7 +87,7 @@ fun FavoritesScreen(
                                 onEdit = { /* No-op */ },
                                 onDelete = { /* No-op */ },
                                 onClick = { onProductClick(product.id) },
-                                onAddToCart = { /* TODO: Implement add to cart from favorites */ },
+                                onAddToCart = { viewModel.addToCart(product) },
                                 onToggleFavorite = { viewModel.removeFromFavorites(product) },
                                 isFavorite = true
                             )

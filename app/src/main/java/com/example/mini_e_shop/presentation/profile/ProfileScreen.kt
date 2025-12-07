@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Settings
@@ -133,7 +134,7 @@ private fun Menu(
 ) {
     Column(modifier = Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         MenuButton(text = "Đơn hàng của tôi", icon = Icons.Default.ReceiptLong, onClick = onNavigateToOrders)
-        MenuButton(text = "Sản phẩm yêu thích", icon = Icons.Default.Favorite, onClick = onNavigateToFavorites)
+        MenuButton(text = "Lịch sử mua hàng", icon = Icons.Default.History, onClick = onNavigateToFavorites)
         MenuButton(text = "Cài đặt", icon = Icons.Default.Settings, onClick = onNavigateToSettings)
     }
 }
@@ -143,7 +144,7 @@ private fun MenuButton(text: String, icon: ImageVector, onClick: () -> Unit) {
     // Màu sắc riêng cho từng menu item
     val iconColor = when (text) {
         "Đơn hàng của tôi" -> CartColor
-        "Sản phẩm yêu thích" -> FavoritesColor
+        "Lịch sử mua hàng" -> PrimaryIndigo
         "Cài đặt" -> PrimaryIndigo
         else -> ProfileColor
     }

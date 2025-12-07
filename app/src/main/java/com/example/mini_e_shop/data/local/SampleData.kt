@@ -144,6 +144,154 @@ object SampleData {
                 origin = "Japan", price = 2498.0, stock = 20,
                 imageUrl = "https://th.bing.com/th/id/R.f740fe45e5ca33c56221220e169d10ac?rik=6GVwcRVehfDFQA&pid=ImgRaw&r=0",
                 description = "A7 IV: Beyond basic."
+            ),
+            // Thêm 20 sản phẩm mới
+            ProductEntity(
+                id = 0,
+                name = "Xiaomi 13 Pro", brand = "Xiaomi", category = "Điện thoại",
+                origin = "China", price = 899.0, stock = 45,
+                imageUrl = "https://cdn.shopify.com/s/files/1/0602/6701/8712/products/xiaomi-13-pro-5g-12gb-256gb-black_1200x1200.jpg",
+                description = "Flagship smartphone với camera Leica."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "OnePlus 11", brand = "OnePlus", category = "Điện thoại",
+                origin = "China", price = 699.0, stock = 50,
+                imageUrl = "https://www.oneplus.com/content/dam/oasis/page/2023/02/oneplus-11/oneplus-11-product-image.png",
+                description = "Never Settle - Flagship performance."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "ASUS ROG Zephyrus G15", brand = "ASUS", category = "Laptop",
+                origin = "Taiwan", price = 1799.0, stock = 20,
+                imageUrl = "https://dlcdnwebimgs.asus.com/gain/8F2A2A5C-0A5F-4B0A-8A5C-5A5F5A5F5A5F",
+                description = "Gaming laptop mạnh mẽ với RTX 4070."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "HP Spectre x360", brand = "HP", category = "Laptop",
+                origin = "USA", price = 1299.0, stock = 30,
+                imageUrl = "https://ssl-product-images.www8-hp.com/digmedialib/prodimg/lowres/c08286648.png",
+                description = "Premium 2-in-1 convertible laptop."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "JBL Flip 6", brand = "JBL", category = "Tai nghe",
+                origin = "USA", price = 129.0, stock = 80,
+                imageUrl = "https://www.jbl.com/dw/image/v2/BFND_PRD/on/demandware.static/-/Sites-masterCatalog_Harman/default/dw0a8c8e0e/JBL_FLIP6_BLK_001_dynamic.png",
+                description = "Portable Bluetooth speaker với âm thanh mạnh mẽ."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Garmin Forerunner 955", brand = "Garmin", category = "Đồng hồ",
+                origin = "USA", price = 599.0, stock = 40,
+                imageUrl = "https://static.garmincdn.com/pumac/forerunner-955/forerunner-955-01.png",
+                description = "GPS running watch với đầy đủ tính năng."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "SteelSeries Apex Pro", brand = "SteelSeries", category = "Bàn phím",
+                origin = "Denmark", price = 199.0, stock = 60,
+                imageUrl = "https://cdn.steelseries.com/images/products/apex-pro-tkl/apex-pro-tkl-main.png",
+                description = "Mechanical keyboard với adjustable switches."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "DJI Mini 3 Pro", brand = "DJI", category = "Máy ảnh",
+                origin = "China", price = 759.0, stock = 35,
+                imageUrl = "https://www.dji.com/vn/mini-3-pro/images/dji-mini-3-pro-drone-1.png",
+                description = "Compact drone với 4K video và obstacle avoidance."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "PlayStation 5", brand = "Sony", category = "Gaming",
+                origin = "Japan", price = 499.0, stock = 25,
+                imageUrl = "https://gmedia.playstation.com/is/image/SIEPDC/ps5-product-thumbnail-01-en-14sep21",
+                description = "Next-gen gaming console."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Xbox Series X", brand = "Microsoft", category = "Gaming",
+                origin = "USA", price = 499.0, stock = 30,
+                imageUrl = "https://compass-ssl.xbox.com/assets/83/53/83534a32-5cae-47d7-adbc-c2b8c8b1581c.png",
+                description = "Most powerful Xbox ever."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Samsung Galaxy Tab S9", brand = "Samsung", category = "Tablet",
+                origin = "Korea", price = 799.0, stock = 40,
+                imageUrl = "https://images.samsung.com/is/image/samsung/p6pim/vn/2307/gallery/vn-galaxy-tab-s9-ultra-sm-x916bzadexx-thumb-534856135",
+                description = "Premium Android tablet với S Pen."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "LG C3 OLED TV 55", brand = "LG", category = "Màn hình",
+                origin = "Korea", price = 1299.0, stock = 15,
+                imageUrl = "https://www.lg.com/us/images/tvs/md07500396/gallery/desktop-01.jpg",
+                description = "55-inch OLED TV với 4K HDR."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Corsair K70 RGB TKL", brand = "Corsair", category = "Bàn phím",
+                origin = "USA", price = 169.0, stock = 55,
+                imageUrl = "https://www.corsair.com/medias/sys_master/images/images/hd5/hd0/9118848368670/-CH-9119014-NA-Gallery-K70-RGB-TKL-01.png",
+                description = "Tenkeyless mechanical gaming keyboard."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "HyperX Cloud Alpha", brand = "HyperX", category = "Tai nghe",
+                origin = "USA", price = 99.0, stock = 70,
+                imageUrl = "https://www.hyperx.com/media-library/images/products/cloud-alpha-wireless/cloud-alpha-wireless-main.png",
+                description = "Gaming headset với dual chamber drivers."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Fitbit Charge 5", brand = "Fitbit", category = "Đồng hồ",
+                origin = "USA", price = 179.0, stock = 90,
+                imageUrl = "https://www.fitbit.com/global/content/dam/fitbit/global/pdp/devices/charge-5/charge-5-hero-black.png",
+                description = "Advanced fitness tracker với ECG."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "SanDisk Extreme Pro 1TB", brand = "SanDisk", category = "Phụ kiện",
+                origin = "USA", price = 129.0, stock = 100,
+                imageUrl = "https://www.westerndigital.com/content/dam/store/en-us/assets/products/memory-cards/sandisk-extreme-pro-sdxc-uhs-i/product/tab/sd-card-extreme-pro-uhs-i-128gb-front.png",
+                description = "High-speed SD card 1TB cho camera."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Belkin BoostCharge Pro", brand = "Belkin", category = "Phụ kiện",
+                origin = "USA", price = 79.0, stock = 85,
+                imageUrl = "https://www.belkin.com/dw/image/v2/BDWJ_PRD/on/demandware.static/-/Sites-master-catalog/default/dw8a8c8e0e/images/large/B2B040-BLK_01.png",
+                description = "Wireless charging pad 15W."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Oculus Quest 3", brand = "Meta", category = "Gaming",
+                origin = "USA", price = 499.0, stock = 35,
+                imageUrl = "https://www.meta.com/quest/products/quest-3/",
+                description = "Mixed reality VR headset."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Canon RF 24-70mm f/2.8", brand = "Canon", category = "Máy ảnh",
+                origin = "Japan", price = 2299.0, stock = 18,
+                imageUrl = "https://www.canon-europe.com/media/rf_24-70mm_f2-8l_is_usm_tcm14-1772422.png",
+                description = "Professional zoom lens cho mirrorless."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Sony WF-1000XM5", brand = "Sony", category = "Tai nghe",
+                origin = "Japan", price = 299.0, stock = 65,
+                imageUrl = "https://www.sony.com/image/4c8b8b8b8b8b8b8b8b8b8b8b8b8b8b",
+                description = "True wireless earbuds với noise canceling."
+            ),
+            ProductEntity(
+                id = 0,
+                name = "Logitech G Pro X Superlight", brand = "Logitech", category = "Phụ kiện",
+                origin = "Switzerland", price = 149.0, stock = 75,
+                imageUrl = "https://resource.logitechg.com/w_800,c_lpad,ar_1:1,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitechg/products/mice/g-pro-x-superlight-2/gallery/g-pro-x-superlight-2-mouse-top-view-graphite.png",
+                description = "Ultra-lightweight wireless gaming mouse."
             )
         )
     }

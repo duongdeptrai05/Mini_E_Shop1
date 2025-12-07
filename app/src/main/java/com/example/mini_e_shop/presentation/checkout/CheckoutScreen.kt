@@ -40,11 +40,10 @@ fun CheckoutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Confirm Order") },
-                // Add a back button
+                title = { Text("Xác nhận đặt hàng", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
                     }
                 }
             )
@@ -60,7 +59,7 @@ fun CheckoutScreen(
                         .padding(16.dp)
                         .height(56.dp)
                 ) {
-                    Text("Confirm Order - $${String.format("%.2f", successState.totalPrice)}", fontWeight = FontWeight.Bold)
+                    Text("Xác nhận đặt hàng - $${String.format("%.2f", successState.totalPrice)}", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -77,7 +76,7 @@ fun CheckoutScreen(
                 is CheckoutUiState.Success -> {
                     LazyColumn(contentPadding = PaddingValues(16.dp)) {
                         item {
-                            Text("Items in your order:", style = MaterialTheme.typography.titleMedium)
+                            Text("Sản phẩm trong đơn hàng:", style = MaterialTheme.typography.titleMedium)
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                         items(state.items) { cartItemDetail ->
