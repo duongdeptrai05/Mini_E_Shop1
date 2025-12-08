@@ -54,6 +54,10 @@ class CartRepositoryImpl @Inject constructor(
     override suspend fun clearCart(userId: Int) {
         cartDao.clearCart(userId)
     }
+
+    override suspend fun removeCartItem(cartItemId: Int) {
+        cartDao.deleteCartItem(cartItemId)
+    }
 }
 // --- BƯỚC 1: THÊM CÁC HÀM MAPPER VÀO CUỐI FILE ---
 

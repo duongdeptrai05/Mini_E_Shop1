@@ -21,9 +21,24 @@ class OrderRepositoryImpl @Inject constructor(
         return orderDao.getOrdersByUser(userId)
     }
 
-    override suspend fun createOrder(order: OrderEntity, items: List<OrderItemEntity>): Long {
-        val orderId = orderDao.insertOrder(order)
-        orderDao.insertOrderItems(items.map { it.copy(orderId = orderId.toInt()) })
+    override suspend fun createOrder(userId: Int, items: List<com.example.mini_e_shop.data.local.dao.CartItemWithProduct>, totalAmount: Double, shippingAddress: String): Long {
+        val orderEntity = OrderEntity(
+            userId = userId,
+            totalAmount = totalAmount,
+            createdAt = Date(),
+            shippingAddress = shippingAddress
+        )
+        val orderId = orderDao.insertOrder(orderEntity)
+        
+        val orderItems = items.map {
+            OrderItemEntity(
+                orderId = orderId.toInt(),
+                productId = it.product.id,
+                quantity = it.cartItem.quantity,
+                price = it.product.price
+            )
+        }
+        orderDao.insertOrderItems(orderItems)
         return orderId
     }
 
@@ -50,10 +65,12 @@ class OrderRepositoryImpl @Inject constructor(
 
         val totalAmount = cartItems.sumOf { it.product.price * it.cartItem.quantity }
 
+        // Mặc định địa chỉ trống nếu dùng method cũ này
         val orderEntity = OrderEntity(
             userId = userId,
             totalAmount = totalAmount,
-            createdAt = Date()
+            createdAt = Date(),
+            shippingAddress = ""
         )
 
         val orderId = orderDao.insertOrder(orderEntity)

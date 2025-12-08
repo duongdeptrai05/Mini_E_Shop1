@@ -42,7 +42,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onNavigateToSupport: () -> Unit // Thêm callback điều hướng tới Support
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showEditInfoDialog by remember { mutableStateOf(false) }
@@ -58,7 +58,7 @@ fun SettingsScreen(
 
     if (showLanguageDialog) {
         LanguageSelectionDialog(
-            currentLanguage = state.language,
+            currentLanguage = uiState.language,
             onDismiss = { showLanguageDialog = false },
             onLanguageSelected = { language ->
                 viewModel.changeLanguage(language)
@@ -70,8 +70,8 @@ fun SettingsScreen(
 
     if (showEditInfoDialog) {
         EditInfoDialog(
-            currentName = state.name,
-            currentEmail = state.email,
+            currentName = uiState.userName,
+            currentEmail = uiState.userEmail,
             onDismiss = { showEditInfoDialog = false },
             onSave = { name, email ->
                 viewModel.updateUserInfo(name, email)
@@ -125,7 +125,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Person,
                     iconColor = Color(0xFF3B82F6), // Blue
                     title = "Thông tin cá nhân",
-                    value = state.name,
+                    value = uiState.userName,
                     onClick = { showEditInfoDialog = true }
                 )
             }
@@ -137,7 +137,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Notifications,
                     iconColor = Color(0xFFF97316), // Orange
                     title = "Thông báo",
-                    checked = state.notificationsEnabled,
+                    checked = uiState.notificationsEnabled,
                     onCheckedChange = { 
                         viewModel.toggleNotifications(it)
                         val message = if (it) "Đã bật thông báo thành công" else "Đã tắt thông báo thành công"
@@ -151,7 +151,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Language,
                     iconColor = Color(0xFF10B981), // Green
                     title = "Ngôn ngữ",
-                    value = state.language,
+                    value = uiState.language,
                     onClick = { showLanguageDialog = true }
                 )
                 Divider(color = Color(0xFFF3F4F6), thickness = 1.dp)
@@ -161,7 +161,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.DarkMode,
                     iconColor = Color(0xFF8B5CF6), // Purple
                     title = "Chế độ tối",
-                    checked = state.darkModeEnabled,
+                    checked = uiState.darkModeEnabled,
                     onCheckedChange = { 
                         viewModel.toggleDarkMode(it)
                         val message = if (it) "Đã bật chế độ tối thành công" else "Đã tắt chế độ tối thành công"

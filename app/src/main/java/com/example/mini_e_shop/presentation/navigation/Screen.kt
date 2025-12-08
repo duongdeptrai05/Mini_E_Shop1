@@ -46,4 +46,6 @@ sealed class Screen(
     object Checkout : Screen("checkout")
     object Contact : Screen("contact")
     object Settings : Screen("settings")
+    object AddressList : Screen("address_list")
+    object AddAddress : Screen("add_address")
 }

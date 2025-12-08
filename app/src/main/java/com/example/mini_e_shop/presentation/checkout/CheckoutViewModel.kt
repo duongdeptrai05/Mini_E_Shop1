@@ -3,109 +3,136 @@ package com.example.mini_e_shop.presentation.checkout
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mini_e_shop.data.local.entity.AddressEntity
+import com.example.mini_e_shop.data.local.dao.CartItemWithProduct
+import com.example.mini_e_shop.data.preferences.UserPreferencesManager
+import com.example.mini_e_shop.domain.repository.AddressRepository
 import com.example.mini_e_shop.domain.repository.CartRepository
 import com.example.mini_e_shop.domain.repository.OrderRepository
-import com.example.mini_e_shop.domain.repository.ProductRepository
-import com.example.mini_e_shop.domain.repository.UserRepository
-import com.example.mini_e_shop.presentation.cart.CartItemDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// UI State for this screen
-sealed class CheckoutUiState {
-    object Loading : CheckoutUiState()
-    data class Success(
-        val items: List<CartItemDetails>,
-        val totalPrice: Double
-    ) : CheckoutUiState()
-    data class Error(val message: String) : CheckoutUiState()
-}
-
-// Events this ViewModel can send to the UI
-sealed class CheckoutEvent {
-    data class ShowSnackbar(val message: String) : CheckoutEvent()
-    object NavigateBack : CheckoutEvent()
-}
+data class CheckoutUiState(
+    val cartItems: List<CartItemWithProduct> = emptyList(),
+    val totalPrice: Double = 0.0,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val isOrderPlaced: Boolean = false,
+    val selectedAddress: AddressEntity? = null,
+    val addresses: List<AddressEntity> = emptyList()
+)
 
 @HiltViewModel
 class CheckoutViewModel @Inject constructor(
     private val cartRepository: CartRepository,
     private val orderRepository: OrderRepository,
-    private val userRepository: UserRepository,
-    private val productRepository: ProductRepository,
-    savedStateHandle: SavedStateHandle
+    private val addressRepository: AddressRepository,
+    private val userPreferencesManager: UserPreferencesManager,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<CheckoutUiState>(CheckoutUiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-    private val _eventChannel = Channel<CheckoutEvent>()
-    val eventFlow = _eventChannel.receiveAsFlow()
-
-    private var itemIds: List<Int> = emptyList()
+    private val _uiState = MutableStateFlow(CheckoutUiState())
+    val uiState: StateFlow<CheckoutUiState> = _uiState.asStateFlow()
 
     init {
-        val cartItemIdsString: String? = savedStateHandle.get("cartItemIds")
-        if (cartItemIdsString != null && cartItemIdsString.isNotEmpty()) {
-            itemIds = cartItemIdsString.split(",").mapNotNull { it.toIntOrNull() }
-            loadCheckoutItems(itemIds)
-        } else {
-            _uiState.value = CheckoutUiState.Error("No items to check out.")
+        savedStateHandle.get<String>("cartItemIds")?.let {
+            val ids = it.split(",").mapNotNull { idStr -> idStr.toIntOrNull() }
+            if (ids.isNotEmpty()) {
+                loadCheckoutItems(ids)
+            }
         }
     }
 
-    private fun loadCheckoutItems(ids: List<Int>) {
+    private fun loadCheckoutItems(itemIds: List<Int>) {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
             try {
-                // Get the full item details (including quantity) using the new repository method
-                val items = cartRepository.getCartItemsByIds(ids)
-                if (items.isNotEmpty()) {
-                    val totalPrice = items.sumOf { it.product.price * it.cartItem.quantity }
-                    _uiState.value = CheckoutUiState.Success(items, totalPrice)
-                } else {
-                    _uiState.value = CheckoutUiState.Error("Could not load item details.")
+                val userId = userPreferencesManager.authPreferencesFlow.first().loggedInUserId
+                if (userId != -1) {
+                    launch {
+                        addressRepository.getAddressesByUserId(userId).collect { addresses ->
+                            val defaultAddress = addresses.find { it.isDefault } ?: addresses.firstOrNull()
+                            val currentSelected = _uiState.value.selectedAddress
+                            _uiState.value = _uiState.value.copy(
+                                addresses = addresses,
+                                selectedAddress = currentSelected ?: defaultAddress
+                            )
+                        }
+                    }
+
+                    cartRepository.getCartItems(userId).collect { items ->
+                        val filteredItems = items.filter { itemIds.contains(it.cartItem.id) }
+                        val total = filteredItems.sumOf { it.product.price * it.cartItem.quantity }
+                        _uiState.value = _uiState.value.copy(
+                            cartItems = filteredItems.map { it.toCartItemWithProduct() },
+                            totalPrice = total,
+                            isLoading = false
+                        )
+                    }
                 }
             } catch (e: Exception) {
-                _uiState.value = CheckoutUiState.Error("Error: ${e.message}")
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }
 
-    // The order placement logic now lives here
+    fun selectAddress(address: AddressEntity) {
+        _uiState.value = _uiState.value.copy(selectedAddress = address)
+    }
+
     fun placeOrder() {
         viewModelScope.launch {
-            val currentState = uiState.value
-            if (currentState is CheckoutUiState.Success) {
-                val currentUserId = userRepository.getCurrentUser().firstOrNull()?.id ?: return@launch
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                val userId = userPreferencesManager.authPreferencesFlow.first().loggedInUserId
+                val address = _uiState.value.selectedAddress
+                if (userId != -1 && address != null) {
+                    val addressString = "${address.name}, ${address.phone}, ${address.address}"
 
-                // Check stock before placing order
-                for (item in currentState.items) {
-                    val product = productRepository.getProductById(item.product.id)
-                    if (product == null || product.stock < item.cartItem.quantity) {
-                        _eventChannel.send(CheckoutEvent.ShowSnackbar("Sản phẩm '${item.product.name}' không đủ hàng trong kho."))
-                        return@launch
+                    orderRepository.createOrder(
+                        userId = userId, 
+                        items = _uiState.value.cartItems, 
+                        totalAmount = _uiState.value.totalPrice,
+                        shippingAddress = addressString
+                    )
+                    
+                    // Clear cart items that were ordered
+                    _uiState.value.cartItems.forEach { 
+                        cartRepository.removeCartItem(it.cartItem.id)
                     }
+                    _uiState.value = _uiState.value.copy(isLoading = false, isOrderPlaced = true)
                 }
-
-                if (currentState.items.isNotEmpty()) {
-                    orderRepository.createOrderFromCart(currentUserId, currentState.items)
-                    // Remove the ordered items from the cart and update stock
-                    currentState.items.forEach {
-                        cartRepository.removeItem(it.cartItem.id)
-                        val product = it.product
-                        val newStock = product.stock - it.cartItem.quantity
-                        productRepository.updateProductStock(product.id, newStock)
-                    }
-                    _eventChannel.send(CheckoutEvent.ShowSnackbar("Order placed successfully!"))
-                    _eventChannel.send(CheckoutEvent.NavigateBack)
-                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }
+}
+
+// Helper to map back from domain model to DAO model for repo call
+private fun com.example.mini_e_shop.presentation.cart.CartItemDetails.toCartItemWithProduct(): CartItemWithProduct {
+    return CartItemWithProduct(
+        cartItem = com.example.mini_e_shop.data.local.entity.CartItemEntity(
+            id = this.cartItem.id,
+            userId = this.cartItem.userId,
+            productId = this.cartItem.productId,
+            quantity = this.cartItem.quantity
+        ),
+        product = com.example.mini_e_shop.data.local.entity.ProductEntity(
+            id = this.product.id,
+            name = this.product.name,
+            brand = this.product.brand,
+            category = this.product.category,
+            origin = this.product.origin,
+            price = this.product.price,
+            stock = this.product.stock,
+            imageUrl = this.product.imageUrl,
+            description = this.product.description
+        )
+    )
 }

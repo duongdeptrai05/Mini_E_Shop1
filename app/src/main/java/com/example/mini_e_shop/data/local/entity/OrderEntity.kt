@@ -18,5 +18,6 @@ data class OrderEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: Int,
     val totalAmount: Double,
-    val createdAt: Date
+    val createdAt: Date,
+    val shippingAddress: String = "" // Thêm trường địa chỉ
 )

@@ -15,21 +15,21 @@ import com.example.mini_e_shop.presentation.profile.ProfileScreen
 @Composable
 fun MainNavGraph(
     modifier: Modifier = Modifier,
-    mainNavController: NavHostController, // NavController chính
-     // Để điều hướng ra các màn hình ngoài (Checkout, Detail...)
-    bottomNavController: NavHostController, // Để điều hướng giữa các tab
+    mainNavController: NavHostController,
+    bottomNavController: NavHostController,
     isAdmin: Boolean,
     currentUser: UserEntity?,
     onNavigateToOrders: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onLogout: () -> Unit,
     onNavigateToAddEditProduct: (Int?) -> Unit,
     onProductClick: (Int) -> Unit,
     onNavigateToSupport: () -> Unit,
-    onNavigateToCheckout: (String) -> Unit
+    onNavigateToCheckout: (String) -> Unit,
+    onNavigateToAddresses: () -> Unit, // Thêm callback
+    onLogout: () -> Unit
 ) {
     NavHost(
-        navController = bottomNavController, // NavHost này dùng NavController của bottom bar
+        navController = bottomNavController,
         startDestination = Screen.Home.route,
         modifier = modifier
     ) {
@@ -51,7 +51,7 @@ fun MainNavGraph(
         composable(Screen.Cart.route) {
             CartScreen(
                 viewModel = hiltViewModel(),
-                onNavigateToCheckout = onNavigateToCheckout // CartScreen dùng NavController chính để điều hướng ra ngoài
+                onNavigateToCheckout = onNavigateToCheckout
             )
         }
         composable(Screen.Profile.route) {
@@ -59,7 +59,8 @@ fun MainNavGraph(
                 currentUser = currentUser,
                 onNavigateToOrders = onNavigateToOrders,
                 onNavigateToSettings = onNavigateToSettings,
-                onNavigateToFavorites = { bottomNavController.navigate(Screen.Favorites.route) }, // Điều hướng sang tab Favorites
+                onNavigateToFavorites = { bottomNavController.navigate(Screen.Favorites.route) },
+                onNavigateToAddresses = onNavigateToAddresses, // Truyền xuống
                 onLogout = onLogout
             )
         }

@@ -3,6 +3,7 @@ package com.example.mini_e_shop.data.local.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.mini_e_shop.data.local.dao.AddressDao
 import com.example.mini_e_shop.data.local.dao.CartDao
 import com.example.mini_e_shop.data.local.dao.OrderDao
 import com.example.mini_e_shop.data.local.dao.ProductDao
@@ -13,8 +14,9 @@ import com.example.mini_e_shop.data.local.entity.OrderItemEntity
 import com.example.mini_e_shop.data.local.entity.ProductEntity
 import com.example.mini_e_shop.data.local.entity.UserEntity
 import com.example.mini_e_shop.data.local.Converters
-import com.example.mini_e_shop.data.local.entity.FavoriteEntity // Thêm import
-import com.example.mini_e_shop.data.local.dao.FavoriteDao // Thêm import
+import com.example.mini_e_shop.data.local.dao.FavoriteDao
+import com.example.mini_e_shop.data.local.entity.AddressEntity
+import com.example.mini_e_shop.data.local.entity.FavoriteEntity
 
 
 @Database(
@@ -24,9 +26,10 @@ import com.example.mini_e_shop.data.local.dao.FavoriteDao // Thêm import
         CartItemEntity::class,
         OrderEntity::class,
         OrderItemEntity::class,
-        FavoriteEntity::class
+        FavoriteEntity::class,
+        AddressEntity::class
     ],
-    version = 8, // Force database recreation
+    version = 10,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -35,6 +38,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun cartDao(): CartDao
     abstract fun orderDao(): OrderDao
     abstract fun userDao(): UserDao
-
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun addressDao(): AddressDao
 }

@@ -1,13 +1,16 @@
 package com.example.mini_e_shop.domain.repository
 
 import com.example.mini_e_shop.data.local.entity.UserEntity
+import com.example.mini_e_shop.data.preferences.AuthPreferences
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
-    suspend fun getUserByEmail(email: String):  UserEntity?
-    suspend fun getUserByName(name: String): UserEntity?
+    val authPreferencesFlow: Flow<AuthPreferences>
+    suspend fun getUserByEmail(email: String): UserEntity?
     suspend fun getUserById(userId: Int): UserEntity?
-    fun observeUserById(userId: Int): Flow<UserEntity?>
     suspend fun registerUser(user: UserEntity)
-     fun getCurrentUser(): Flow<UserEntity?>
+    suspend fun loginUser(email: String, password: String): UserEntity?
+    suspend fun saveLoginState(isLoggedIn: Boolean, userId: Int)
+    suspend fun clearLoginState()
+    suspend fun saveRememberMeEmail(email: String?)
 }

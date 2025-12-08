@@ -9,6 +9,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.mini_e_shop.data.local.SampleData
+import com.example.mini_e_shop.data.local.dao.AddressDao
 import com.example.mini_e_shop.data.local.dao.CartDao
 import com.example.mini_e_shop.data.local.dao.FavoriteDao
 import com.example.mini_e_shop.data.local.dao.OrderDao
@@ -18,11 +19,13 @@ import com.example.mini_e_shop.data.local.database.AppDatabase
 import com.example.mini_e_shop.data.local.entity.UserEntity
 import com.example.mini_e_shop.data.local.entity.UserRole
 import com.example.mini_e_shop.data.preferences.UserPreferencesManager
+import com.example.mini_e_shop.data.repository.AddressRepositoryImpl
 import com.example.mini_e_shop.data.repository.CartRepositoryImpl
 import com.example.mini_e_shop.data.repository.FavoriteRepositoryImpl
 import com.example.mini_e_shop.data.repository.OrderRepositoryImpl
 import com.example.mini_e_shop.data.repository.ProductRepositoryImpl
 import com.example.mini_e_shop.data.repository.UserRepositoryImpl
+import com.example.mini_e_shop.domain.repository.AddressRepository
 import com.example.mini_e_shop.domain.repository.CartRepository
 import com.example.mini_e_shop.domain.repository.FavoriteRepository
 import com.example.mini_e_shop.domain.repository.OrderRepository
@@ -66,28 +69,6 @@ class DatabaseCallback @Inject constructor(
         }
     }
 
-//    private suspend fun createAdminAccount() {
-//        val adminPasswordHash = BCrypt.hashpw("123", BCrypt.gensalt())
-//        val adminAccount = UserEntity(
-//            email = "admin",
-//            passwordHash = adminPasswordHash,
-//            name = "Admin",
-//            role = UserRole.ADMIN
-//        )
-//        userDao.get().insertUser(adminAccount)
-//    }
-
-//    suspend fun seedSampleProducts() {
-//        // Lấy productDao từ Provider
-//        val dao = productDao.get()
-//        // Kiểm tra xem có sản phẩm nào trong bảng chưa
-//        if (dao.getProductCount() == 0) {
-//            // Nếu chưa có, mới chèn dữ liệu mẫu
-//            dao.insertProducts(SampleData.getSampleProducts())
-//        }
-//    }
-
-
     @Module
     @InstallIn(SingletonComponent::class)
     object DatabaseModule {
@@ -126,6 +107,10 @@ class DatabaseCallback @Inject constructor(
         @Provides
         @Singleton
         fun provideFavoriteDao(db: AppDatabase): FavoriteDao = db.favoriteDao()
+
+        @Provides
+        @Singleton
+        fun provideAddressDao(db: AppDatabase): AddressDao = db.addressDao()
     }
 
     @Module
@@ -160,6 +145,12 @@ class DatabaseCallback @Inject constructor(
         abstract fun bindFavoriteRepository(
             favoriteRepositoryImpl: FavoriteRepositoryImpl
         ): FavoriteRepository
+
+        @Binds
+        @Singleton
+        abstract fun bindAddressRepository(
+            addressRepositoryImpl: AddressRepositoryImpl
+        ): AddressRepository
     }
 
     @Module

@@ -5,13 +5,12 @@ import com.example.mini_e_shop.data.local.entity.OrderItemEntity
 import com.example.mini_e_shop.domain.model.Order
 import com.example.mini_e_shop.presentation.cart.CartItemDetails
 import kotlinx.coroutines.flow.Flow
-
+import java.util.Date
 
 interface OrderRepository {
     fun getOrders(userId: Int): Flow<List<OrderEntity>>
-    suspend fun createOrder(order: OrderEntity, items: List<OrderItemEntity>): Long
+    suspend fun createOrder(userId: Int, items: List<com.example.mini_e_shop.data.local.dao.CartItemWithProduct>, totalAmount: Double, shippingAddress: String): Long
     fun getOrderItems(orderId: Int): Flow<List<OrderItemEntity>>
-    suspend fun createOrderFromCart(userId: Int, cartItems: List<CartItemDetails>)
+    suspend fun createOrderFromCart(userId: Int, cartItems: List<CartItemDetails>) // Giữ lại method cũ nếu cần, hoặc update nó
     fun getOrdersForUser(userId: Int): Flow<List<Order>>
 }
-

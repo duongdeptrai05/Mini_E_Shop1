@@ -4,76 +4,105 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mini_e_shop.domain.model.Product
+import com.example.mini_e_shop.domain.repository.CartRepository
+import com.example.mini_e_shop.domain.repository.FavoriteRepository
 import com.example.mini_e_shop.domain.repository.ProductRepository
+import com.example.mini_e_shop.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.mini_e_shop.domain.repository.CartRepository
-import com.example.mini_e_shop.domain.repository.UserRepository
-import kotlinx.coroutines.flow.firstOrNull
 
-// Trạng thái của giao diện màn hình chi tiết
+// Định nghĩa UiState riêng cho màn hình chi tiết
 sealed class ProductDetailUiState {
-    data object Loading : ProductDetailUiState()
-    data class Success(val product: Product) : ProductDetailUiState()
+    object Loading : ProductDetailUiState()
+    data class Success(val product: Product, val isFavorite: Boolean) : ProductDetailUiState()
     data class Error(val message: String) : ProductDetailUiState()
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
     private val productRepository: ProductRepository,
+    private val favoriteRepository: FavoriteRepository,
     private val cartRepository: CartRepository,
     private val userRepository: UserRepository,
-    savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProductDetailUiState>(ProductDetailUiState.Loading)
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<ProductDetailUiState> = _uiState.asStateFlow()
 
     init {
-        // Lấy productId từ arguments
-        val productId: Int? = savedStateHandle.get("productId")
-        if (productId != null) {
-            fetchProductDetails(productId)
-        } else {
-            _uiState.value = ProductDetailUiState.Error("Không tìm thấy ID sản phẩm.")
-        }
+        observeProduct()
     }
 
-    private fun fetchProductDetails(productId: Int) {
+    private fun observeProduct() {
         viewModelScope.launch {
-            try {
-                // Gọi repository để lấy sản phẩm
-                val product = productRepository.getProductById(productId)
-                if (product != null) {
-                    _uiState.value = ProductDetailUiState.Success(product)
+            val productId = savedStateHandle.get<Int>("productId")
+            if (productId == null) {
+                _uiState.value = ProductDetailUiState.Error("Product ID not found")
+                return@launch
+            }
+
+            userRepository.authPreferencesFlow.flatMapLatest { prefs ->
+                val favoriteFlow = if (prefs.isLoggedIn) {
+                    favoriteRepository.isFavorite(prefs.loggedInUserId, productId)
                 } else {
-                    _uiState.value = ProductDetailUiState.Error("Không tìm thấy sản phẩm.")
+                    flowOf(false)
                 }
-            } catch (e: Exception) {
-                _uiState.value = ProductDetailUiState.Error("Lỗi khi tải dữ liệu: ${e.message}")
+
+                // Giả sử getProductById là suspend function, chúng ta gọi nó và tạo flow
+                val product = productRepository.getProductById(productId)
+                val productFlow = flowOf(product)
+
+                productFlow.combine(favoriteFlow) { prod, isFavorite ->
+                    if (prod != null) {
+                        ProductDetailUiState.Success(prod, isFavorite)
+                    } else {
+                        ProductDetailUiState.Error("Product not found")
+                    }
+                }
+            }.catch { e ->
+                _uiState.value = ProductDetailUiState.Error(e.message ?: "Unknown error")
+            }.collect { state ->
+                _uiState.value = state
             }
         }
     }
 
-    fun onAddToCart(product: Product) {
+    fun onFavoriteToggle() {
         viewModelScope.launch {
-            try {
-                // Lấy người dùng hiện tại đang đăng nhập
-                val currentUser = userRepository.getCurrentUser().firstOrNull()
+            val currentState = _uiState.value
+            if (currentState is ProductDetailUiState.Success) {
+                val product = currentState.product
+                val isFavorite = currentState.isFavorite
 
-                if (currentUser != null) {
-                    // Gọi hàm với đầy đủ 2 tham số: product và userId
-                    cartRepository.addProductToCart(product, currentUser.id)
-
-                    // TODO: Gửi sự kiện báo thành công
-                } else {
-                    // TODO: Xử lý trường hợp không tìm thấy người dùng (ví dụ: đã bị logout)
+                userRepository.authPreferencesFlow.firstOrNull()?.let { prefs ->
+                    if (prefs.isLoggedIn) {
+                        if (isFavorite) {
+                            favoriteRepository.removeFavorite(prefs.loggedInUserId, product.id)
+                        } else {
+                            favoriteRepository.addFavorite(prefs.loggedInUserId, product.id)
+                        }
+                    }
                 }
-            } catch (e: Exception){
-                // TODO: Xử lý lỗi
+            }
+        }
+    }
+
+    // Hàm onAddToCart không cần tham số product vì nó lấy từ state hiện tại
+    fun onAddToCart() {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            if (currentState is ProductDetailUiState.Success) {
+                val product = currentState.product
+                userRepository.authPreferencesFlow.firstOrNull()?.let { prefs ->
+                    if (prefs.isLoggedIn) {
+                        cartRepository.addProductToCart(product, prefs.loggedInUserId)
+                    }
+                }
             }
         }
     }

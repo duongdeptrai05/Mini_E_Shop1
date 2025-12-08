@@ -2,10 +2,7 @@ package com.example.mini_e_shop.presentation.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mini_e_shop.domain.model.Product
 import com.example.mini_e_shop.domain.repository.CartRepository
-import com.example.mini_e_shop.domain.repository.OrderRepository
-import com.example.mini_e_shop.domain.repository.ProductRepository
 import com.example.mini_e_shop.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -38,25 +35,20 @@ sealed class CartViewEvent {
 @HiltViewModel
 class CartViewModel @Inject constructor(
     private val cartRepository: CartRepository,
-    private val orderRepository: OrderRepository,
-    private val userRepository: UserRepository,
-    private val productRepository: ProductRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
     private val _cartItems = MutableStateFlow<List<SelectableCartItem>>(emptyList())
     private val _eventChannel = Channel<CartViewEvent>()
     val eventFlow = _eventChannel.receiveAsFlow()
 
-    // uiState là State cuối cùng được tính toán và đưa ra cho UI
     val uiState: StateFlow<CartUiState> = _cartItems
         .map { items ->
             if (items.isEmpty()) {
                 CartUiState.Empty
             } else {
-                // Tính toán tổng tiền chỉ dựa trên các item được chọn
                 val checkoutPrice = items.filter { it.isSelected }
                     .sumOf { it.details.product.price * it.details.cartItem.quantity }
 
-                // Kiểm tra xem có phải tất cả item đều được chọn không
                 val isAllSelected = items.isNotEmpty() && items.all { it.isSelected }
 
                 CartUiState.Success(
@@ -78,16 +70,13 @@ class CartViewModel @Inject constructor(
 
     private fun observeCartItems() {
         viewModelScope.launch {
-            // Lắng nghe user, sau đó chuyển sang lắng nghe giỏ hàng của user đó
-            userRepository.getCurrentUser().flatMapLatest { user ->
-                if (user != null) {
-                    cartRepository.getCartItems(user.id)
+            userRepository.authPreferencesFlow.flatMapLatest { prefs ->
+                if (prefs.isLoggedIn) {
+                    cartRepository.getCartItems(prefs.loggedInUserId)
                 } else {
-                    flowOf(emptyList()) // Nếu không có user, trả về list rỗng
+                    flowOf(emptyList())
                 }
             }.collect { cartItemDetails ->
-                // Mỗi khi dữ liệu từ DB thay đổi, cập nhật lại _cartItems
-                // Giữ lại trạng thái isSelected của các item đã có
                 val currentSelection = _cartItems.value.associateBy { it.details.cartItem.id }
                 _cartItems.value = cartItemDetails.map { detail ->
                     SelectableCartItem(
@@ -99,7 +88,6 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    // CÁC HÀM MỚI ĐỂ XỬ LÝ SỰ KIỆN
     fun onItemCheckedChanged(cartItemId: Int, isChecked: Boolean) {
         _cartItems.value = _cartItems.value.map {
             if (it.details.cartItem.id == cartItemId) {
@@ -133,24 +121,6 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    fun placeOrder() {
-        viewModelScope.launch {
-            val currentUserId = userRepository.getCurrentUser().firstOrNull()?.id ?: return@launch
-            val itemsToCheckout = _cartItems.value.filter { it.isSelected }.map { it.details }
-
-            if (itemsToCheckout.isNotEmpty()) {
-                orderRepository.createOrderFromCart(currentUserId, itemsToCheckout)
-                // Thay vì xóa toàn bộ giỏ hàng, chỉ xóa những item đã đặt
-                itemsToCheckout.forEach {
-                    cartRepository.removeItem(it.cartItem.id)
-                    val product = it.product
-                    val newStock = product.stock - it.cartItem.quantity
-                    productRepository.updateProductStock(product.id, newStock)
-                }
-            }
-        }
-    }
-    // --- HÀM MỚI ĐỂ XỬ LÝ SỰ KIỆN CLICK NÚT MUA HÀNG ---
     fun onCheckoutClick() {
         viewModelScope.launch {
             val selectedIds = _cartItems.value
@@ -160,6 +130,8 @@ class CartViewModel @Inject constructor(
 
             if (selectedIds.isNotEmpty()) {
                 _eventChannel.send(CartViewEvent.NavigateToCheckout(selectedIds))
+            } else {
+                _eventChannel.send(CartViewEvent.ShowSnackbar("Vui lòng chọn ít nhất một sản phẩm"))
             }
         }
     }

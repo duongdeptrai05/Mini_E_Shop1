@@ -4,163 +4,151 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mini_e_shop.domain.model.Product
 import com.example.mini_e_shop.domain.repository.CartRepository
-import com.example.mini_e_shop.domain.repository.FavoriteRepository // BƯỚC 1: Import FavoriteRepository
+import com.example.mini_e_shop.domain.repository.FavoriteRepository
 import com.example.mini_e_shop.domain.repository.ProductRepository
 import com.example.mini_e_shop.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// BƯỚC 1: Tạo enum class để định nghĩa các kiểu sắp xếp
+// Define SortType enum as expected by the UI
 enum class SortType {
-    NONE, // Mặc định
-    PRICE_ASC, // Giá tăng dần
-    PRICE_DESC, // Giá giảm dần
-    NAME_ASC, // Tên A-Z
-    NAME_DESC // Tên Z-A
+    NONE,
+    PRICE_ASC,
+    PRICE_DESC,
+    NAME_ASC
 }
 
-@OptIn(FlowPreview::class)
+// Define ProductListUiState sealed class as expected by the UI
+sealed class ProductListUiState {
+    object Loading : ProductListUiState()
+    data class Success(
+        val products: List<Product>,
+        val categories: List<String>,
+        val favoriteStatusMap: Map<Int, Boolean>
+    ) : ProductListUiState()
+    data class Error(val message: String) : ProductListUiState()
+}
+
 @HiltViewModel
 class ProductListViewModel @Inject constructor(
     private val productRepository: ProductRepository,
+    private val favoriteRepository: FavoriteRepository,
     private val cartRepository: CartRepository,
-    private val userRepository: UserRepository,
-    private val favoriteRepository: FavoriteRepository // BƯỚC 2: Inject FavoriteRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery = _searchQuery.asStateFlow()
+    private val _uiState = MutableStateFlow<ProductListUiState>(ProductListUiState.Loading)
+    val uiState: StateFlow<ProductListUiState> = _uiState.asStateFlow()
 
-    private val _selectedCategory = MutableStateFlow<String?>("All") // Mặc định là "All"
-    val selectedCategory = _selectedCategory.asStateFlow()
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
     private val _selectedSortType = MutableStateFlow(SortType.NONE)
-    val selectedSortType = _selectedSortType.asStateFlow()
+    val selectedSortType: StateFlow<SortType> = _selectedSortType.asStateFlow()
 
-    // Tạo Channel và Flow cho sự kiện
     private val _eventChannel = Channel<String>()
     val eventFlow = _eventChannel.receiveAsFlow()
 
-    // SỬA: _uiState sẽ kết hợp cả sản phẩm và danh sách yêu thích
-    val uiState: StateFlow<ProductListUiState> = combine(
-        productRepository.getAllProducts(),
-        searchQuery.debounce(300),
-        _selectedCategory,
-        _selectedSortType,
-        // Lấy danh sách ID sản phẩm yêu thích của người dùng hiện tại
-        userRepository.getCurrentUser().flatMapLatest { user ->
-            if (user != null) {
-                favoriteRepository.getFavoriteProductIds(user.id)
-            } else {
-                flowOf(emptySet())
+    init {
+        observeProductList()
+    }
+
+    private fun observeProductList() {
+        viewModelScope.launch {
+            // Combine multiple flows for reactive UI
+            combine(
+                productRepository.getAllProducts(),
+                userRepository.authPreferencesFlow.flatMapLatest { prefs ->
+                    if (prefs.isLoggedIn) favoriteRepository.getFavoriteProductIds(prefs.loggedInUserId)
+                    else flowOf(emptySet())
+                },
+                _searchQuery,
+                _selectedCategory,
+                _selectedSortType
+            ) { allProducts, favoriteIds, query, category, sortType ->
+                // Filtering and Sorting logic
+                val categories = listOf("Tất cả") + allProducts.map { it.category }.distinct()
+
+                val filteredProducts = allProducts.filter { product ->
+                    val matchesCategory = category == null || category == "Tất cả" || product.category == category
+                    val matchesQuery = query.isBlank() || product.name.contains(query, ignoreCase = true)
+                    matchesCategory && matchesQuery
+                }
+
+                val sortedProducts = when (sortType) {
+                    SortType.PRICE_ASC -> filteredProducts.sortedBy { it.price }
+                    SortType.PRICE_DESC -> filteredProducts.sortedByDescending { it.price }
+                    SortType.NAME_ASC -> filteredProducts.sortedBy { it.name }
+                    SortType.NONE -> filteredProducts
+                }
+
+                val favoriteMap = sortedProducts.associate { it.id to favoriteIds.contains(it.id) }
+
+                ProductListUiState.Success(
+                    products = sortedProducts,
+                    categories = categories,
+                    favoriteStatusMap = favoriteMap
+                )
+            }.catch { e ->
+                _uiState.value = ProductListUiState.Error(e.message ?: "An unknown error occurred")
+            }.collect { successState ->
+                _uiState.value = successState
             }
         }
-    ) { allProducts, query, category, sortType, favoriteIds ->
-        // Lấy ra danh sách các category duy nhất từ tất cả sản phẩm
-        val categories = listOf("All") + allProducts.map { it.category }.distinct()
-
-        // Lọc theo search query trước
-        val searchedProducts = if (query.isBlank()) {
-            allProducts
-        } else {
-            allProducts.filter {
-                it.name.contains(query, ignoreCase = true) || it.brand.contains(query, ignoreCase = true)
-            }
-        }
-        //--------------
-        // Lọc tiếp theo category
-        val categorizedProducts = if (category == "All") {
-            searchedProducts
-        } else {
-            searchedProducts.filter { it.category == category }
-        }
-
-        // BƯỚC 4: Sắp xếp danh sách ở bước cuối cùng
-        val sortedProducts = when (sortType) {
-            SortType.PRICE_ASC -> categorizedProducts.sortedBy { it.price }
-            SortType.PRICE_DESC -> categorizedProducts.sortedByDescending { it.price }
-            SortType.NAME_ASC -> categorizedProducts.sortedBy { it.name }
-            SortType.NAME_DESC -> categorizedProducts.sortedByDescending { it.name }
-            SortType.NONE -> categorizedProducts // Không sắp xếp
-        }
-
-        val favoriteStatusMap = sortedProducts.associate { it.id to (it.id in favoriteIds) }
-        // Trả về cả danh sách sản phẩm, danh sách category và trạng thái yêu thích
-        ProductListUiState.Success(sortedProducts, categories, favoriteStatusMap)
-
     }
-        .catch<ProductListUiState> { e -> emit(ProductListUiState.Error(e.message ?: "Lỗi không xác định")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProductListUiState.Loading)
 
-
-    fun onCategorySelected(category: String) {
-        _selectedCategory.value = category
-    }
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onCategorySelected(category: String) {
+        _selectedCategory.value = if (category == "Tất cả") null else category
+    }
+
+    fun onSortTypeSelected(sortType: SortType) {
+        _selectedSortType.value = sortType
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
             productRepository.deleteProduct(product)
+            _eventChannel.send("Sản phẩm đã được xóa")
         }
     }
 
     fun addToCart(product: Product) {
         viewModelScope.launch {
-            userRepository.getCurrentUser().firstOrNull()?.let { user ->
-                try {
-                    // Check if the product is in stock
-                    if (product.stock > 0) {
-                        cartRepository.addProductToCart(product, user.id)
-                        // Gửi thông báo thành công qua Channel
-                        _eventChannel.send("Đã thêm '${product.name}' vào giỏ hàng")
-                    } else {
-                        _eventChannel.send("Sản phẩm đã hết hàng")
-                    }
-                } catch (e: Exception) {
-                    _eventChannel.send("Lỗi: Không thể thêm vào giỏ hàng")
-                }
-            } ?: _eventChannel.send("Vui lòng đăng nhập để thực hiện")
+            val userId = userRepository.authPreferencesFlow.first().loggedInUserId
+            if (userId != -1) {
+                cartRepository.addProductToCart(product, userId)
+                _eventChannel.send("${product.name} đã được thêm vào giỏ hàng")
+            } else {
+                 _eventChannel.send("Vui lòng đăng nhập để thêm sản phẩm")
+            }
         }
     }
+
     fun toggleFavorite(product: Product) {
         viewModelScope.launch {
-            userRepository.getCurrentUser().firstOrNull()?.let { user ->
-                try {
-                    // isFavorite bây giờ cần được tính toán trước khi toggle
-                    val isCurrentlyFavorite = favoriteRepository.getFavoriteProductIds(user.id).first().contains(product.id)
-                    favoriteRepository.toggleFavorite(productId = product.id, userId = user.id)
+            val userId = userRepository.authPreferencesFlow.first().loggedInUserId
+            if (userId != -1) {
+                val isCurrentlyFavorite = (_uiState.value as? ProductListUiState.Success)
+                    ?.favoriteStatusMap?.get(product.id) ?: false
 
-                    // Gửi thông báo tương ứng
-                    if (isCurrentlyFavorite) {
-                        _eventChannel.send("Đã xóa '${product.name}' khỏi danh sách yêu thích")
-                    } else {
-                        _eventChannel.send("Đã thêm '${product.name}' vào danh sách yêu thích")
-                    }
-                } catch (e: Exception) {
-                    _eventChannel.send("Lỗi: Thao tác thất bại")
+                if (isCurrentlyFavorite) {
+                    favoriteRepository.removeFavorite(userId, product.id)
+                } else {
+                    favoriteRepository.addFavorite(userId, product.id)
                 }
-            } ?: _eventChannel.send("Vui lòng đăng nhập để thực hiện")
+            } else {
+                 _eventChannel.send("Vui lòng đăng nhập để yêu thích sản phẩm")
+            }
         }
     }
-    fun onSortTypeSelected(sortType: SortType) {
-        _selectedSortType.value = sortType
-    }
-}
-
-
-// SỬA: Thêm favoriteStatusMap vào trạng thái Success
-sealed class ProductListUiState {
-    object Loading : ProductListUiState()
-    data class Success(
-        val products: List<Product>,
-        val categories: List<String> = emptyList(),
-        val favoriteStatusMap: Map<Int, Boolean> = emptyMap()
-    ) : ProductListUiState()
-    data class Error(val message: String) : ProductListUiState()
 }

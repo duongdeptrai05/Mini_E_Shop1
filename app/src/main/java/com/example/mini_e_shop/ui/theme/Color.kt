@@ -4,10 +4,10 @@ import androidx.compose.ui.graphics.Color
 
 // Modern Professional Color Palette
 // Primary Colors - Indigo/Blue gradient theme
-val PrimaryIndigo = Color(0xFF6366F1)      // Modern indigo
-val PrimaryBlue = Color(0xFF3B82F6)        // Vibrant blue
+val PrimaryIndigo = Color(0xFF1D1D25)      // Modern indigo
+val PrimaryBlue = Color(0xFF2A2E36)        // Vibrant blue
 val PrimaryDark = Color(0xFF4F46E5)         // Darker indigo for emphasis
-val PrimaryLight = Color(0xFF818CF8)       // Light indigo for accents
+val PrimaryLight = Color(0xFF1A1A1C)       // Light indigo for accents
 
 // Gradient Colors - Professional gradient
 val GradientStart = Color(0xFF6366F1)      // Indigo start

@@ -18,6 +18,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.mini_e_shop.presentation.add_edit_product.AddEditProductScreen
+import com.example.mini_e_shop.presentation.address.AddAddressScreen
+import com.example.mini_e_shop.presentation.address.AddressListScreen
 import com.example.mini_e_shop.presentation.auth.AuthState
 import com.example.mini_e_shop.presentation.auth.AuthViewModel
 import com.example.mini_e_shop.presentation.auth.MainUiState
@@ -45,15 +47,13 @@ class MainActivity : ComponentActivity() {
             Mini_E_ShopTheme {
                 val authViewModel = hiltViewModel<AuthViewModel>()
                 val authState by authViewModel.authState.collectAsState()
-                val navController = rememberNavController() // CHỈ DÙNG MỘT NAVCONTROLLER DUY NHẤT
+                val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
                 val scope = rememberCoroutineScope()
 
-
-                // SỬA: BỌC TẤT CẢ TRONG MỘT SCAFFOLD ĐỂ CUNG CẤP SNACKBARHOST
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-                ) { padding -> // padding này là bắt buộc nhưng chúng ta không dùng
+                ) { padding ->
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
@@ -67,7 +67,6 @@ class MainActivity : ComponentActivity() {
                             AuthState.Authenticated -> {
                                 val mainUiState by authViewModel.mainUiState.collectAsState()
 
-                                // Đổi tên biến để tránh nhầm lẫn với authState
                                 when (val currentState = mainUiState) {
                                     is MainUiState.Loading -> {
                                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -79,11 +78,10 @@ class MainActivity : ComponentActivity() {
                                             composable(Screen.Main.route) {
                                                 MainScreen(
                                                     mainUiState = currentState,
-                                                    // SỬA LỖI: Dùng thuộc tính đúng là 'currentUser'
                                                     currentUser = currentState.currentUser,
                                                     mainNavController = navController,
                                                     onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
-                                                    onLogout = { authViewModel.onLogout() },
+                                                    onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                                                     onNavigateToAddEditProduct = { productId ->
                                                         navController.navigate("${Screen.AddEditProduct.route}?productId=$productId")
                                                     },
@@ -93,8 +91,9 @@ class MainActivity : ComponentActivity() {
                                                     onNavigateToSupport = { navController.navigate(Screen.Support.route) },
                                                     onNavigateToCheckout = { cartItemIds ->
                                                         navController.navigate("${Screen.Checkout.route}/$cartItemIds")
-                                                    }
-
+                                                    },
+                                                    onNavigateToAddresses = { navController.navigate(Screen.AddressList.route) },
+                                                    onLogout = { authViewModel.onLogout() }
                                                 )
                                             }
                                             composable(Screen.Orders.route) {
@@ -135,16 +134,13 @@ class MainActivity : ComponentActivity() {
                                             composable(Screen.Contact.route) {
                                                 ContactScreen(onBack = { navController.popBackStack() })
                                             }
-                                            // SỬA: COMPOSABLE CHO CHECKOUT GIỜ ĐÃ HOÀN TOÀN HỢP LỆ
                                             composable(
                                                 route = "${Screen.Checkout.route}/{cartItemIds}",
                                                 arguments = listOf(navArgument("cartItemIds") { type = NavType.StringType })
                                             ) {
                                                 CheckoutScreen(
-                                                    // Không cần truyền cartViewModel nữa
                                                     onNavigateBack = { navController.popBackStack() },
                                                     onShowSnackbar = { message ->
-                                                        // Giờ đây scope và snackbarHostState đã tồn tại và hợp lệ
                                                         scope.launch {
                                                             snackbarHostState.showSnackbar(message)
                                                         }
@@ -159,6 +155,20 @@ class MainActivity : ComponentActivity() {
                                                     onNavigateToSupport = { navController.navigate(Screen.Support.route) }
                                                 )
                                             }
+                                            composable(Screen.AddressList.route) {
+                                                AddressListScreen(
+                                                    viewModel = hiltViewModel(),
+                                                    onBack = { navController.popBackStack() },
+                                                    onAddAddress = { navController.navigate(Screen.AddAddress.route) },
+                                                    onEditAddress = { addressId -> /* TODO */ }
+                                                )
+                                            }
+                                            composable(Screen.AddAddress.route) {
+                                                AddAddressScreen(
+                                                    viewModel = hiltViewModel(),
+                                                    onBack = { navController.popBackStack() }
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -168,8 +178,8 @@ class MainActivity : ComponentActivity() {
                                     composable(Screen.Login.route) {
                                         LoginScreen(
                                             viewModel = hiltViewModel(),
-                                            onLoginSuccess = {
-                                                authViewModel.onLoginSuccess(it)
+                                            onLoginSuccess = { userId ->
+                                                authViewModel.onLoginSuccess(userId)
                                             },
                                             onNavigateToRegister = { navController.navigate(Screen.Register.route) }
                                         )
